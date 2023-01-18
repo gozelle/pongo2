@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-
-	"github.com/flosch/pongo2/v6"
+	
+	"github.com/gozelle/pongo2"
 	. "gopkg.in/check.v1"
 )
 
@@ -47,14 +47,14 @@ func (s *TestSuite) TestMisc(c *C) {
 		PanicMatches,
 		`\[Error \(where: fromfile\) in .*template_tests[/\\]inheritance[/\\]doesnotexist.tpl | Line 1 Col 12 near 'doesnotexist.tpl'\] open .*template_tests[/\\]inheritance[/\\]doesnotexist.tpl: no such file or directory`,
 	)
-
+	
 	// Context
 	c.Check(parseTemplateFn("", pongo2.Context{"'illegal": nil}), PanicMatches, ".*not a valid identifier.*")
-
+	
 	// Registers
 	c.Check(pongo2.RegisterFilter("escape", nil).Error(), Matches, ".*is already registered")
 	c.Check(pongo2.RegisterTag("for", nil).Error(), Matches, ".*is already registered")
-
+	
 	// ApplyFilter
 	v, err := pongo2.ApplyFilter("title", pongo2.AsValue("this is a title"), nil)
 	if err != nil {
@@ -74,9 +74,9 @@ func (s *TestSuite) TestImplicitExecCtx(c *C) {
 	if err != nil {
 		c.Fatalf("Error in FromString: %v", err)
 	}
-
+	
 	val := "a stringy thing"
-
+	
 	res, err := tpl.Execute(pongo2.Context{
 		"Value": val,
 		"ImplicitExec": func(ctx *pongo2.ExecutionContext) string {
@@ -86,20 +86,20 @@ func (s *TestSuite) TestImplicitExecCtx(c *C) {
 	if err != nil {
 		c.Fatalf("Error executing template: %v", err)
 	}
-
+	
 	c.Check(res, Equals, val)
-
+	
 	// The implicit ctx should not be persisted from call-to-call
 	res, err = tpl.Execute(pongo2.Context{
 		"ImplicitExec": func() string {
 			return val
 		},
 	})
-
+	
 	if err != nil {
 		c.Fatalf("Error executing template: %v", err)
 	}
-
+	
 	c.Check(res, Equals, val)
 }
 
@@ -120,7 +120,7 @@ func FuzzSimpleExecution(f *testing.F) {
 	}
 	files := []string{"README.md"}
 	files = append(files, tpls...)
-
+	
 	for _, tplPath := range files {
 		buf, err := ioutil.ReadFile(tplPath)
 		if err != nil {
@@ -128,9 +128,9 @@ func FuzzSimpleExecution(f *testing.F) {
 		}
 		f.Add(string(buf), "test-value")
 	}
-
+	
 	f.Add("{{ foobar }}", "00000000")
-
+	
 	f.Fuzz(func(t *testing.T, tpl, contextValue string) {
 		ts := pongo2.NewSet("fuzz-test", &DummyLoader{})
 		out, err := ts.FromString(tpl)

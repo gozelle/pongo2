@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/flosch/pongo2/v6"
+	
+	"github.com/gozelle/pongo2"
 )
 
 type stringerValueType int
@@ -91,15 +91,15 @@ func BannedFilterFn(in *pongo2.Value, params *pongo2.Value) (*pongo2.Value, *pon
 
 func init() {
 	pongo2.DefaultSet.Debug = true
-
+	
 	pongo2.RegisterFilter("banned_filter", BannedFilterFn)
 	pongo2.RegisterFilter("unbanned_filter", BannedFilterFn)
 	pongo2.RegisterTag("banned_tag", tagSandboxDemoTagParser)
 	pongo2.RegisterTag("unbanned_tag", tagSandboxDemoTagParser)
-
+	
 	pongo2.DefaultSet.BanFilter("banned_filter")
 	pongo2.DefaultSet.BanTag("banned_tag")
-
+	
 	f, err := ioutil.TempFile(os.TempDir(), "pongo2_")
 	if err != nil {
 		panic(fmt.Sprintf("cannot write to %s", os.TempDir()))
@@ -271,7 +271,7 @@ func TestTemplate_Functions(t *testing.T) {
 		"foo":    "bar",
 		"foobar": 8379,
 	}
-
+	
 	tests := []struct {
 		name         string
 		template     string
@@ -368,7 +368,7 @@ func TestTemplate_Functions(t *testing.T) {
 func TestTemplates(t *testing.T) {
 	// Add a global to the default set
 	pongo2.Globals["this_is_a_global_variable"] = "this is a global text"
-
+	
 	matches, err := filepath.Glob("./template_tests/*.tpl")
 	if err != nil {
 		t.Fatal(err)
@@ -380,15 +380,15 @@ func TestTemplates(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error on FromFile('%s'): %s", match, err.Error())
 			}
-
+			
 			// Read options from file
 			optsStr, _ := ioutil.ReadFile(fmt.Sprintf("%s.options", match))
 			trimBlocks := strings.Contains(string(optsStr), "TrimBlocks=true")
 			lStripBlocks := strings.Contains(string(optsStr), "LStripBlocks=true")
-
+			
 			tpl.Options.TrimBlocks = trimBlocks
 			tpl.Options.LStripBlocks = lStripBlocks
-
+			
 			testFilename := fmt.Sprintf("%s.out", match)
 			testOut, rerr := ioutil.ReadFile(testFilename)
 			if rerr != nil {
@@ -415,7 +415,7 @@ func TestTemplates(t *testing.T) {
 
 func TestBlockTemplates(t *testing.T) {
 	// debug = true
-
+	
 	matches, err := filepath.Glob("./template_tests/block_render/*.tpl")
 	if err != nil {
 		t.Fatal(err)
@@ -423,12 +423,12 @@ func TestBlockTemplates(t *testing.T) {
 	for idx, match := range matches {
 		t.Run(fmt.Sprintf("%03d-%s", idx+1, match), func(t *testing.T) {
 			t.Logf("[BlockTemplate %3d] Testing '%s'", idx+1, match)
-
+			
 			tpl, err := pongo2.FromFile(match)
 			if err != nil {
 				t.Fatalf("Error on FromFile('%s'): %s", match, err.Error())
 			}
-
+			
 			testFilename := fmt.Sprintf("%s.out", match)
 			testOut, rerr := ioutil.ReadFile(testFilename)
 			if rerr != nil {
@@ -438,7 +438,7 @@ func TestBlockTemplates(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error on ExecuteBlocks('%s'): %s", match, err.Error())
 			}
-
+			
 			if _, ok := tpl_out["content"]; !ok {
 				t.Errorf("Failed: content not in tpl_out for %s", match)
 			}
@@ -482,7 +482,7 @@ var testTemplateFixes = testTemplateFixesT{
 
 func TestExecutionErrors(t *testing.T) {
 	// debug = true
-
+	
 	matches, err := filepath.Glob("./template_tests/*-execution.err")
 	if err != nil {
 		t.Fatal(err)
@@ -494,18 +494,18 @@ func TestExecutionErrors(t *testing.T) {
 				t.Fatalf("could not read file '%v': %v", match, err)
 			}
 			tests := strings.Split(string(testData), "\n")
-
+			
 			checkFilename := fmt.Sprintf("%s.out", match)
 			checkData, err := ioutil.ReadFile(checkFilename)
 			if err != nil {
 				t.Fatalf("Error on ReadFile('%s'): %s", checkFilename, err.Error())
 			}
 			checks := strings.Split(string(checkData), "\n")
-
+			
 			if len(checks) != len(tests) {
 				t.Fatal("Template lines != Checks lines")
 			}
-
+			
 			for idx, test := range tests {
 				if strings.TrimSpace(test) == "" {
 					continue
@@ -514,23 +514,23 @@ func TestExecutionErrors(t *testing.T) {
 					t.Fatalf("[%s Line %d] Check is empty (must contain an regular expression).",
 						match, idx+1)
 				}
-
+				
 				_, err = pongo2.FromString(test)
 				if err != nil {
 					t.Fatalf("Error on FromString('%s'): %s", test, err.Error())
 				}
-
+				
 				tpl, err := pongo2.FromBytes([]byte(test))
 				if err != nil {
 					t.Fatalf("Error on FromBytes('%s'): %s", test, err.Error())
 				}
-
+				
 				_, err = tpl.ExecuteBytes(tplContext)
 				if err == nil {
 					t.Fatalf("[%s Line %d] Expected error for (got none): %s",
 						match, idx+1, tests[idx])
 				}
-
+				
 				re := regexp.MustCompile(fmt.Sprintf("^%s$", checks[idx]))
 				if !re.MatchString(err.Error()) {
 					t.Fatalf("[%s Line %d] Error for '%s' (err = '%s') does not match the (regexp-)check: %s",
@@ -543,7 +543,7 @@ func TestExecutionErrors(t *testing.T) {
 
 func TestCompilationErrors(t *testing.T) {
 	// debug = true
-
+	
 	matches, err := filepath.Glob("./template_tests/*-compilation.err")
 	if err != nil {
 		t.Fatal(err)
@@ -555,18 +555,18 @@ func TestCompilationErrors(t *testing.T) {
 				t.Fatalf("could not read file '%v': %v", match, err)
 			}
 			tests := strings.Split(string(testData), "\n")
-
+			
 			checkFilename := fmt.Sprintf("%s.out", match)
 			checkData, err := ioutil.ReadFile(checkFilename)
 			if err != nil {
 				t.Fatalf("error on ReadFile('%s'): %s", checkFilename, err.Error())
 			}
 			checks := strings.Split(string(checkData), "\n")
-
+			
 			if len(checks) != len(tests) {
 				t.Fatal("Template lines != Checks lines")
 			}
-
+			
 			for idx, test := range tests {
 				if strings.TrimSpace(test) == "" {
 					continue
@@ -575,7 +575,7 @@ func TestCompilationErrors(t *testing.T) {
 					t.Fatalf("[%s Line %d] Check is empty (must contain an regular expression).",
 						match, idx+1)
 				}
-
+				
 				_, err = pongo2.FromString(test)
 				if err == nil {
 					t.Fatalf("[%s | Line %d] Expected error for (got none): %s", match, idx+1, tests[idx])
@@ -592,21 +592,21 @@ func TestCompilationErrors(t *testing.T) {
 
 func TestBaseDirectory(t *testing.T) {
 	mustStr := "Hello from template_tests/base_dir_test/"
-
+	
 	fs := pongo2.MustNewLocalFileSystemLoader("")
 	s := pongo2.NewSet("test set with base directory", fs)
 	s.Globals["base_directory"] = "template_tests/base_dir_test/"
 	if err := fs.SetBaseDir(s.Globals["base_directory"].(string)); err != nil {
 		t.Fatal(err)
 	}
-
+	
 	matches, err := filepath.Glob("./template_tests/base_dir_test/subdir/*")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, match := range matches {
 		match = strings.Replace(match, fmt.Sprintf("template_tests%cbase_dir_test%c", filepath.Separator, filepath.Separator), "", -1)
-
+		
 		tpl, err := s.FromFile(match)
 		if err != nil {
 			t.Fatal(err)
@@ -676,7 +676,7 @@ func BenchmarkCompileAndExecuteComplexWithSandboxActive(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-
+		
 		err = tpl.ExecuteWriterUnbuffered(tplContext, ioutil.Discard)
 		if err != nil {
 			b.Fatal(err)
@@ -721,16 +721,16 @@ func BenchmarkCompileAndExecuteComplexWithoutSandbox(b *testing.B) {
 		b.Fatal(err)
 	}
 	preloadedTpl := string(buf)
-
+	
 	s := pongo2.NewSet("set without sandbox", pongo2.MustNewLocalFileSystemLoader(""))
-
+	
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tpl, err := s.FromString(preloadedTpl)
 		if err != nil {
 			b.Fatal(err)
 		}
-
+		
 		err = tpl.ExecuteWriterUnbuffered(tplContext, ioutil.Discard)
 		if err != nil {
 			b.Fatal(err)

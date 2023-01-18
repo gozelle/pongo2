@@ -2,8 +2,8 @@ package pongo2_test
 
 import (
 	"testing"
-
-	"github.com/flosch/pongo2/v6"
+	
+	"github.com/gozelle/pongo2"
 )
 
 func TestIssue151(t *testing.T) {
@@ -11,7 +11,7 @@ func TestIssue151(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	
 	str, err := tpl.Execute(pongo2.Context{
 		"mydict": map[string]string{
 			"51232_3": "foo",
@@ -22,7 +22,7 @@ func TestIssue151(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	
 	if str != "foobarbaz" {
 		t.Fatalf("Expected output 'foobarbaz', but got '%s'.", str)
 	}
@@ -33,12 +33,12 @@ func TestIssue297(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	
 	str, err := tpl.Execute(pongo2.Context{"input": "one two three four five six"})
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	
 	if str != "Testing: one two three four\nfive six!" {
 		t.Fatalf("Expected `Testing: one two three four\nfive six!`, but got `%v`.", str)
 	}
