@@ -2,6 +2,7 @@ package pongo2_test
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
@@ -145,4 +146,30 @@ func FuzzSimpleExecution(f *testing.F) {
 			out.Execute(mycontext)
 		}
 	})
+}
+
+func TestSimple(t *testing.T) {
+	//pongo2.SetAutoescape()
+	tpl, err := pongo2.FromString(`
+class {{name}}{
+	{%- for i in list %}
+	name:string = {{i}};
+{%- endfor %}
+}
+
+class B {
+
+}
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := tpl.Execute(map[string]any{
+		"name": "tom",
+		"list": []interface{}{1, 2, 3},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(r)
 }
